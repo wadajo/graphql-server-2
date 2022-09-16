@@ -1,0 +1,9 @@
+type Query {
+    artistas: [Artista]
+}
+
+type Artista {
+    id: ID
+    apellido: String
+    estilo: String
+}
