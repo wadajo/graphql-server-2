@@ -10,6 +10,7 @@ type Artista {
 }
 
 type Obra{
+    artistaId: ID
     nombre: String
     imagen: String
 }
