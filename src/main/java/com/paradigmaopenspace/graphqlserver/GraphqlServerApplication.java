@@ -35,11 +35,8 @@ class GraphqlController{
 	AtomicLong idCounter=new AtomicLong();
 	List<Artista> bbdd=List.of(
 			new Artista(idCounter.incrementAndGet(),"Levstein","Videoarte",
-//					List.of(new Obra(idCounter.get(),"Poemas para leer frente al espejo","poemas.jpg"),
-//							new Obra(idCounter.get(),"Vocabulario","vocab.jpg"))),
 					Collections.emptyList()),
 			new Artista(idCounter.incrementAndGet(),"Casile","Performance",
-//					List.of(new Obra(idCounter.get(),"Lengua húmeda","lengua.jpg"))));
 					Collections.emptyList()));
 
 	@QueryMapping
@@ -58,12 +55,13 @@ class GraphqlController{
 
 		return todasLasObras.collectList()
 				.map(obras -> {
-					Map<Long, List<Obra>> collect = obras.stream()
+					Map<Long, List<Obra>> obrasDeCadaArtistaId = obras.stream()
 							.collect(Collectors.groupingBy(Obra::artistaId));
 
 					return artistas.stream()
-							.collect(Collectors.toMap(unArtista -> unArtista,
-									unArtista -> collect.get(Long.parseLong(unArtista.id().toString()))));
+							.collect(Collectors.toMap(
+									unArtista -> unArtista, //K, el Artista
+									unArtista -> obrasDeCadaArtistaId.get(Long.parseLong(unArtista.id().toString())))); //V, la lista de obras
 				});
 	}
 
