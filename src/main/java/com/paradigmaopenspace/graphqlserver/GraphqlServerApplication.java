@@ -1,5 +1,7 @@
 package com.paradigmaopenspace.graphqlserver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
@@ -15,6 +17,11 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalField;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,6 +39,7 @@ public class GraphqlServerApplication {
 
 @Controller
 class GraphqlController{
+	Logger log= LoggerFactory.getLogger("MyLogger");
 	AtomicLong idCounter=new AtomicLong();
 	List<Artista> bbdd=List.of(
 			new Artista(idCounter.incrementAndGet(),"Levstein","Videoarte",
@@ -41,12 +49,13 @@ class GraphqlController{
 
 	@QueryMapping
 	Flux<Artista> artistas(){
-		return Flux.fromIterable(bbdd);
+		log.info("Llamado al query: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
+		return Flux.fromIterable(bbdd).delaySubscription(Duration.of(3, ChronoUnit.SECONDS)).doOnSubscribe(e->log.info("Suscrito: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND)));
 	}
 
 	@BatchMapping(typeName = "Artista")
 	public Mono<Map<Artista, List<Obra>>> obras(List<Artista> artistas){
-
+		log.info("Obteniendo obrasA: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
 		var artistasIds = artistas.stream()
 				.map(Artista::id)
 				.toList();
