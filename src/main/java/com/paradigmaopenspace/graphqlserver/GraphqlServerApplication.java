@@ -55,7 +55,7 @@ class GraphqlController{
 
 	@BatchMapping(typeName = "Artista")
 	public Mono<Map<Artista, List<Obra>>> obras(List<Artista> artistas){
-		log.info("Obteniendo obrasA: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
+		log.info("Obteniendo obras: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
 		var artistasIds = artistas.stream()
 				.map(Artista::id)
 				.toList();
@@ -84,4 +84,4 @@ class GraphqlController{
 }
 
 record Artista (Long id, String apellido, String estilo, List<Obra> obras){}
-record Obra (Long artistaId, String nombre, String imagen){}
+record Obra (Long artistaId, String titulo, String imagen){}
