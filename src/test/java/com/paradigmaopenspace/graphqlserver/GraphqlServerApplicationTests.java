@@ -8,6 +8,9 @@ import org.springframework.graphql.test.tester.GraphQlTester;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+
 @GraphQlTest(GraphqlController.class)
 class GraphqlServerApplicationTests {
 
@@ -15,13 +18,23 @@ class GraphqlServerApplicationTests {
 	private GraphQlTester graphQlTester;
 
 	@Test
-	void apellidos(){
+	void debeHaberTresArtistas(){
 		this.graphQlTester
 				.documentName("artistas_test1")
 				.execute()
 				.path("artistas")
-				.entity(List.class)
-				.matches(lista->lista.size()==3);
+				.entityList(Artista.class)
+				.hasSize(3);
+	}
+
+	@Test
+	void levsteinDebeTenerDosObras(){
+		this.graphQlTester
+				.documentName("artistas_test2")
+				.execute()
+				.path("artistas[0].obras")
+				.entityList(Obra.class)
+				.hasSize(2);
 	}
 
 }

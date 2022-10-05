@@ -1,0 +1,8 @@
+query{
+    artistas{
+        apellido,
+        obras{
+            titulo
+        }
+    }
+}
