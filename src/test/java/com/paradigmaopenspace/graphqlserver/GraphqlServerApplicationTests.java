@@ -37,4 +37,14 @@ class GraphqlServerApplicationTests {
 				.hasSize(2);
 	}
 
+	@Test
+	void obeidDebeTenerEstiloVideoarte(){
+		this.graphQlTester
+				.documentName("artistas_test3")
+				.execute()
+				.path("artistas[2].estilo")
+				.entity(String.class)
+				.matches(estilo->estilo.equals("Videoarte"));
+	}
+
 }

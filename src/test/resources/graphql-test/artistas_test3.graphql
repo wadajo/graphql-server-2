@@ -1,0 +1,6 @@
+query{
+    artistas{
+        apellido,
+        estilo
+    }
+}
