@@ -7,10 +7,16 @@ type Artista {
     apellido: String
     estilo: String
     obras:[Obra]
+    premios: [Premio]
 }
 
 type Obra{
     artistaId: ID
     titulo: String
     imagen: String
+}
+
+type Premio{
+    ano: Int
+    nombre: String
 }

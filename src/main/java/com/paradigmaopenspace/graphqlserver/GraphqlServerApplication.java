@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,12 +46,16 @@ class GraphqlController{
 			new Artista(idCounter.incrementAndGet(),"Levstein","Videoarte",
 					Collections.emptyList()),
 			new Artista(idCounter.incrementAndGet(),"Casile","Performance",
+					Collections.emptyList()),
+			new Artista(idCounter.incrementAndGet(),"Obeid","Videoarte",
 					Collections.emptyList()));
 
 	@QueryMapping
 	Flux<Artista> artistas(){
 		log.info("Llamado al query: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
-		return Flux.fromIterable(bbdd).delaySubscription(Duration.of(3, ChronoUnit.SECONDS)).doOnSubscribe(e->log.info("Suscrito: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND)));
+		return Flux.fromIterable(bbdd)
+				.delaySubscription(Duration.of(3, ChronoUnit.SECONDS))
+				.doOnSubscribe(e->log.info("Suscrito: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND)));
 	}
 
 	@BatchMapping(typeName = "Artista")
@@ -74,14 +79,25 @@ class GraphqlController{
 				});
 	}
 
+	@SchemaMapping
+	public List<Premio> premios(Artista artista){
+		return switch (artista.apellido()){
+			case "Levstein" -> List.of(new Premio(2018,"Premio Estímulo Ministerio de Innovación y Cultura de Santa Fe"));
+			case "Casile" -> List.of(new Premio(2015,"6º Premio Itaú de Artes Visuales"));
+			default -> Collections.emptyList();
+		};
+	}
+
 	private Flux<Obra> obtenerObras(List<Long> artistasIds) {
 		return Flux.just(
 				new Obra(Long.parseLong("1"), "Poemas para leer frente al espejo","poemas.jpg"),
 				new Obra(Long.parseLong("1"),"Vocabulario","vocab.jpg"),
-				new Obra(Long.parseLong("2"),"Lengua húmeda","lengua.jpg")
+				new Obra(Long.parseLong("2"),"Lengua húmeda","lengua.jpg"),
+				new Obra(Long.parseLong("3"),"Dobles","dobles_video.jpg")
 		);
 	}
 }
 
 record Artista (Long id, String apellido, String estilo, List<Obra> obras){}
 record Obra (Long artistaId, String titulo, String imagen){}
+record Premio(Integer ano, String nombre){}
