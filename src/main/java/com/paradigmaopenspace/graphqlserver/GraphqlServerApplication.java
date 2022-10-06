@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,6 +53,7 @@ class GraphqlController{
 					Collections.emptyList()));
 
 	@QueryMapping
+	@PreAuthorize("hasRole('ADMIN')")
 	Flux<Artista> artistas(){
 		log.info("Llamado al query: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
 		return Flux.fromIterable(bbdd)
