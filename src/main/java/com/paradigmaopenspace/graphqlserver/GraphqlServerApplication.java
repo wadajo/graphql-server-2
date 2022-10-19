@@ -1,5 +1,6 @@
 package com.paradigmaopenspace.graphqlserver;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -46,11 +47,11 @@ class GraphqlController{
 	AtomicLong idCounter=new AtomicLong();
 	List<Artista> bbdd=List.of(
 			new Artista(idCounter.incrementAndGet(),"Levstein","Videoarte",
-					Collections.emptyList()),
+					Collections.emptyList(),Collections.emptyList()),
 			new Artista(idCounter.incrementAndGet(),"Casile","Performance",
-					Collections.emptyList()),
+					Collections.emptyList(),Collections.emptyList()),
 			new Artista(idCounter.incrementAndGet(),"Obeid","Videoarte",
-					Collections.emptyList()));
+					Collections.emptyList(),Collections.emptyList()));
 
 	@QueryMapping
 	@PreAuthorize("hasRole('ADMIN')")
@@ -84,6 +85,7 @@ class GraphqlController{
 
 	@SchemaMapping
 	public List<Premio> premios(Artista artista){
+		log.info("Obteniendo premios: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
 		return switch (artista.apellido()){
 			case "Levstein" -> List.of(new Premio(2018,"Premio Estímulo Ministerio de Innovación y Cultura de Santa Fe"));
 			case "Casile" -> List.of(new Premio(2015,"6º Premio Itaú de Artes Visuales"));
@@ -101,6 +103,6 @@ class GraphqlController{
 	}
 }
 
-record Artista (Long id, String apellido, String estilo, List<Obra> obras){}
+record Artista (Long id, String apellido, String estilo, List<Obra> obras, List<Premio> premios){}
 record Obra (Long artistaId, String titulo, String imagen){}
 record Premio(Integer ano, String nombre){}
