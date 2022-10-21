@@ -54,7 +54,7 @@ class GraphqlController{
 	}
 
 	@BatchMapping(typeName = "Artista")
-	public Mono<Map<Artista, List<Obra>>> obras(List<Artista> artistas){
+	Mono<Map<Artista, List<Obra>>> obras(List<Artista> artistas){
 		log.info("Obteniendo obras: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
 		var artistasIds = artistas.stream()
 				.map(Artista::id)
@@ -75,7 +75,7 @@ class GraphqlController{
 	}
 
 	@SchemaMapping
-	public List<Premio> premios(Artista artista){
+	List<Premio> premios(Artista artista){
 		log.info("Obteniendo premios: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
 		return switch (artista.apellido()){
 			case "Levstein" -> List.of(new Premio(2018,"Premio Estímulo Ministerio de Innovación y Cultura de Santa Fe"));
