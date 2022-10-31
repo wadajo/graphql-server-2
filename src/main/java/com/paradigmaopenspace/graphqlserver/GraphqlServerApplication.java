@@ -56,15 +56,12 @@ class GraphqlController{
 	@BatchMapping(typeName = "Artista")
 	Mono<Map<Artista, List<Obra>>> obras(List<Artista> artistas){
 		log.info("Obteniendo obras: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
-		var artistasIds = artistas.stream()
-				.map(Artista::id)
-				.toList();
 
-		var todasLasObras = obtenerObras(artistasIds);
+		var todasLasObras = obtenerObras();
 
 		return todasLasObras.collectList()
-				.map(obras -> {
-					Map<Long, List<Obra>> obrasDeCadaArtistaId = obras.stream()
+				.map(listDeObras -> {
+					Map<Long, List<Obra>> obrasDeCadaArtistaId = listDeObras.stream()
 							.collect(Collectors.groupingBy(Obra::artistaId));
 
 					return artistas.stream()
@@ -84,7 +81,8 @@ class GraphqlController{
 		};
 	}
 
-	private Flux<Obra> obtenerObras(List<Long> artistasIds) {
+	// Service o Repository o llamada a otra API que obtiene todas las obras
+	private Flux<Obra> obtenerObras() {
 		return Flux.just(
 				new Obra(Long.parseLong("1"), "Poemas para leer frente al espejo","poemas.jpg"),
 				new Obra(Long.parseLong("1"),"Vocabulario","vocab.jpg"),
