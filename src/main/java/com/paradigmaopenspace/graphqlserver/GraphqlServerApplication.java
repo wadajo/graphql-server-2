@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
@@ -46,11 +47,22 @@ class GraphqlController{
 	@QueryMapping
 	@PreAuthorize("hasRole('ADMIN')")
 	Flux<Artista> artistas(){
-		log.info("Llamado al query: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
+		log.info("Llamado al query general: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
 		return Flux.fromIterable(bbdd)
+				.delaySubscription(Duration.of(1, ChronoUnit.SECONDS))
+				.doOnSubscribe(e->log.info("Suscrito query general: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND)))
+				.doOnComplete(()-> log.info("Completado query general."));
+	}
+
+	@QueryMapping
+	@PreAuthorize("hasRole('USER')")
+	Mono<Artista> artistaPorId(@Argument String id){
+		log.info("Llamado al query individual: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
+		Artista encontrado = bbdd.get(0);
+		return Mono.just(encontrado)
 				.delaySubscription(Duration.of(3, ChronoUnit.SECONDS))
-				.doOnSubscribe(e->log.info("Suscrito: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND)))
-				.doOnComplete(()-> log.info("Completado."));
+				.doOnSubscribe(e->log.info("Suscrito query individual: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND)))
+				.doOnTerminate(()-> log.info("Completado query individual."));
 	}
 
 	@BatchMapping(typeName = "Artista")

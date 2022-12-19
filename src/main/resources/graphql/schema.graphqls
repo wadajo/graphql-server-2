@@ -1,5 +1,6 @@
 type Query {
     artistas: [Artista]
+    artistaPorId(id:ID): Artista
 }
 
 type Artista {
