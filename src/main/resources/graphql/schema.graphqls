@@ -1,5 +1,6 @@
 type Query {
     artistas: [Artista]
+    artistasPorEstilo(estilo:String): [Artista]
     artistaPorId(id:ID): Artista
 }
 

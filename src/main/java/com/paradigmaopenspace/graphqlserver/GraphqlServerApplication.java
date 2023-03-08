@@ -45,13 +45,24 @@ class GraphqlController{
 					Collections.emptyList(),Collections.emptyList()));
 
 	@QueryMapping
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('USER')")
 	Flux<Artista> artistas(){
 		log.info("Llamado al query general: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
 		return Flux.fromIterable(bbdd)
 				.delaySubscription(Duration.of(1, ChronoUnit.SECONDS))
 				.doOnSubscribe(e->log.info("Suscrito query general: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND)))
 				.doOnComplete(()-> log.info("Completado query general."));
+	}
+
+	@QueryMapping
+	@PreAuthorize("hasRole('USER')")
+	Flux<Artista> artistasPorEstilo(@Argument String estilo){
+		log.info("Llamado al query por estilo: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
+		var encontrados=bbdd.stream().filter(artista -> artista.estilo().equalsIgnoreCase(estilo)).toList();
+		return Flux.fromIterable(encontrados)
+				.delaySubscription(Duration.of(1, ChronoUnit.SECONDS))
+				.doOnSubscribe(e->log.info("Suscrito query por estilo: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND)))
+				.doOnComplete(()-> log.info("Completado query por estilo."));
 	}
 
 	@QueryMapping
