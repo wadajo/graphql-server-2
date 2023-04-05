@@ -4,6 +4,10 @@ type Query {
     artistaPorId(id:ID): Artista
 }
 
+type Mutation {
+    agregarArtista(nuevo: ArtistaInput): Artista
+}
+
 type Artista {
     id: ID
     apellido: String
@@ -21,4 +25,9 @@ type Obra{
 type Premio{
     ano: Int
     nombre: String
+}
+
+input ArtistaInput{
+    apellido: String
+    estilo: String
 }

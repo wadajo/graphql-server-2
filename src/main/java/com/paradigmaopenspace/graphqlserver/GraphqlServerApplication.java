@@ -4,10 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.graphql.data.method.annotation.BatchMapping;
-import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
@@ -17,9 +14,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -35,14 +30,8 @@ public class GraphqlServerApplication {
 @Controller
 class GraphqlController{
 	Logger log= LoggerFactory.getLogger("MyLogger");
-	AtomicLong idCounter=new AtomicLong();
-	List<Artista> bbdd=List.of(
-			new Artista(idCounter.incrementAndGet(),"Levstein","Videoarte",
-					Collections.emptyList(),Collections.emptyList()),
-			new Artista(idCounter.incrementAndGet(),"Casile","Performance",
-					Collections.emptyList(),Collections.emptyList()),
-			new Artista(idCounter.incrementAndGet(),"Obeid","Videoarte",
-					Collections.emptyList(),Collections.emptyList()));
+	static AtomicLong idCounter=new AtomicLong(3L);
+	private static List<Artista> bbdd=List.copyOf(obtenerArtistas(null));
 
 	@QueryMapping
 	@PreAuthorize("hasRole('USER')")
@@ -80,9 +69,9 @@ class GraphqlController{
 	Mono<Map<Artista, List<Obra>>> obras(List<Artista> artistas){
 		log.info("Obteniendo obras: "+ Instant.now().get(ChronoField.MILLI_OF_SECOND));
 
-		var todasLasObras = obtenerObras();
+		var todasLasObras = obtenerObras(null);
 
-		return todasLasObras.collectList()
+		return Flux.fromIterable(todasLasObras).collectList()
 				.map(listDeObras -> {
 					Map<Long, List<Obra>> obrasDeCadaArtistaId = listDeObras.stream()
 							.collect(Collectors.groupingBy(Obra::artistaId));
@@ -90,7 +79,7 @@ class GraphqlController{
 					return artistas.stream()
 							.collect(Collectors.toMap(
 									unArtista -> unArtista, //K, el Artista
-									unArtista -> obrasDeCadaArtistaId.get(Long.parseLong(unArtista.id().toString())))); //V, la lista de obras
+									unArtista -> Objects.requireNonNullElseGet(obrasDeCadaArtistaId.get(Long.parseLong(unArtista.id().toString())), Collections::emptyList))); //V, la lista de obras
 				});
 	}
 
@@ -104,9 +93,40 @@ class GraphqlController{
 		};
 	}
 
+	@MutationMapping
+	@PreAuthorize("hasRole('USER')")
+	Mono<Artista> agregarArtista (@Argument ArtistaInput nuevo) {
+		var nuevoArtista=new Artista(idCounter.incrementAndGet(),nuevo.apellido(),nuevo.estilo(),Collections.emptyList(),Collections.emptyList());
+		bbdd=obtenerArtistas(nuevoArtista);
+		return Mono.just(nuevoArtista);
+	}
+
 	// Service o Repository o llamada a otra API que obtiene todas las obras
-	private Flux<Obra> obtenerObras() {
-		return Flux.just(
+	private static List<Obra> obtenerObras(Obra otra) {
+		var listaBase= new ArrayList<>(listaDeObras());
+		if (null!=otra)
+			listaBase.add(otra);
+		return listaBase;
+	}
+	private static List<Artista> obtenerArtistas(Artista otro) {
+		var listaBase= new ArrayList<>(listaDeArtistas());
+		if (null!=otro)
+			listaBase.add(otro);
+		return listaBase;
+	}
+
+	private static List<Artista> listaDeArtistas() {
+		return List.of(
+				new Artista(1L,"Levstein","Videoarte",
+						Collections.emptyList(),Collections.emptyList()),
+				new Artista(2L,"Casile","Performance",
+						Collections.emptyList(),Collections.emptyList()),
+				new Artista(3L,"Obeid","Videoarte",
+						Collections.emptyList(),Collections.emptyList()));
+	}
+
+	private static List<Obra> listaDeObras(){
+		return List.of(
 				new Obra(Long.parseLong("1"), "Poemas para leer frente al espejo","poemas.jpg"),
 				new Obra(Long.parseLong("1"),"Vocabulario","vocab.jpg"),
 				new Obra(Long.parseLong("2"),"Lengua húmeda","lengua.jpg"),
@@ -115,6 +135,8 @@ class GraphqlController{
 	}
 }
 
+
 record Artista (Long id, String apellido, String estilo, List<Obra> obras, List<Premio> premios){}
+record ArtistaInput (String apellido, String estilo){}
 record Obra (Long artistaId, String titulo, String imagen){}
 record Premio(Integer ano, String nombre){}
