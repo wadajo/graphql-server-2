@@ -47,4 +47,14 @@ class GraphqlServerApplicationTests {
 				.matches(estilo->estilo.equals("Videoarte"));
 	}
 
+	@Test
+	void miraldaAgregadoDebeTenerId4(){
+		this.graphQlTester
+				.documentName("artistas_test4")
+				.execute()
+				.path("agregarArtista.id")
+				.entity(Long.class)
+				.isEqualTo(4L);
+	}
+
 }

@@ -1,0 +1,14 @@
+mutation {
+    agregarArtista(nuevo:{
+        apellido:"Miralda",
+        estilo:"escultura"
+    })
+    {
+        id,
+        apellido,
+        estilo,
+        obras{
+            titulo
+        }
+    }
+}
