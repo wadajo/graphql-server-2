@@ -40,7 +40,7 @@ public class GraphQlSecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
-                .csrf().disable()
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .anyExchange().authenticated()
                 )
